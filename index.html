@@ -243,6 +243,11 @@
       showQuestion();
     }
 
+    // ひらがなかどうかを判定するヘルパー関数
+    function isHiragana(char) {
+      return /^[\u3040-\u309F]$/.test(char);
+    }
+
     function generateSimilarReading(reading) {
       let chars = reading.split('');
       let candidates = [];
@@ -258,27 +263,30 @@
       return chars.join('');
     }
 
-    function getSimilarReadingOptions(correctReading) {
-      let options = new Set([correctReading]);
+    // 同じジャンルの中から類似読みダミーを作成 🎧
+    function getSimilarReadingOptions(correctItem) {
+      let options = new Set([correctItem.reading]);
       let attempts = 0;
       while (options.size < 4 && attempts < 30) {
-        let dummy = generateSimilarReading(correctReading);
+        let dummy = generateSimilarReading(correctItem.reading);
         options.add(dummy);
         attempts++;
       }
+      // 不足分は同ジャンルの他の読みから補完
       if (options.size < 4) {
-        let others = quizData.map(item => item.reading).filter(r => !options.has(r));
-        others.sort(() => 0.5 - Math.random());
-        for (let r of others) {
-          options.add(r);
+        let sameGenreItems = quizData.filter(item => item.genre === correctItem.genre && !options.has(item.reading));
+        sameGenreItems.sort(() => 0.5 - Math.random());
+        for (let item of sameGenreItems) {
+          options.add(item.reading);
           if (options.size === 4) break;
         }
       }
       return Array.from(options).sort(() => 0.5 - Math.random());
     }
 
+    // 同ジャンルの他データから選択肢を取得 🗂️
     function getRandomOptions(correctItem, key) {
-      let wrongItems = quizData.filter(item => item[key] !== correctItem[key]);
+      let wrongItems = quizData.filter(item => item.genre === correctItem.genre && item[key] !== correctItem[key]);
       let uniqueWrong = [];
       let seen = new Set();
       for (let item of wrongItems) {
@@ -293,10 +301,21 @@
       return options.sort(() => 0.5 - Math.random());
     }
 
-    function getRandomDummyKanji(correctChar) {
-      let allChars = quizData.map(item => item.kanji).join("").split("");
-      let filtered = [...new Set(allChars.filter(c => c !== correctChar))];
+    // 穴埋め用のダミー漢字を取得（ひらがなは除外） 🧩
+    function getRandomDummyKanji(correctChar, currentGenre) {
+      let genreData = quizData.filter(item => item.genre === currentGenre);
+      let allChars = genreData.map(item => item.kanji).join("").split("");
+      // 漢字のみに絞り込み（ひらがなを除外）
+      let filtered = [...new Set(allChars.filter(c => c !== correctChar && !isHiragana(c)))];
       filtered.sort(() => 0.5 - Math.random());
+      
+      // 不足している場合は全体から漢字を取得
+      if (filtered.length < 3) {
+        let fallbackChars = quizData.map(item => item.kanji).join("").split("");
+        let extra = [...new Set(fallbackChars.filter(c => c !== correctChar && !isHiragana(c)))];
+        filtered = [...new Set([...filtered, ...extra])];
+      }
+
       return filtered.slice(0, 3);
     }
 
@@ -351,11 +370,22 @@
       const q = currentFilteredQuiz[currentIndex];
 
       if (currentMode === 'blank') {
-        // 穴埋め表示
-        const targetIndex = Math.floor(Math.random() * q.kanji.length);
+        // 送り仮名（ひらがな）を避けて、漢字の位置から穴埋めターゲットを選ぶ 🎯
+        let kanjiIndices = [];
+        for (let i = 0; i < q.kanji.length; i++) {
+          if (!isHiragana(q.kanji[i])) {
+            kanjiIndices.push(i);
+          }
+        }
+        
+        // 万が一すべてひらがな等の場合のフォールバック
+        let targetIndex = kanjiIndices.length > 0 
+          ? kanjiIndices[Math.floor(Math.random() * kanjiIndices.length)] 
+          : 0;
+
         const targetChar = q.kanji[targetIndex];
         const maskedKanji = q.kanji.substring(0, targetIndex) + "〇" + q.kanji.substring(targetIndex + 1);
-        const dummyChars = getRandomDummyKanji(targetChar);
+        const dummyChars = getRandomDummyKanji(targetChar, q.genre);
         const options = [targetChar, ...dummyChars].sort(() => 0.5 - Math.random());
 
         container.innerHTML = `
@@ -375,7 +405,7 @@
         `;
 
       } else if (currentMode === 'reading') {
-        const options = getSimilarReadingOptions(q.reading);
+        const options = getSimilarReadingOptions(q);
 
         container.innerHTML = `
           <div class="meta-info">
