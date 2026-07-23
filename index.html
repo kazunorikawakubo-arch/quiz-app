@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漢検1級 四字熟語マスター</title>
+  <style>
+    /* 全体のボックス計算を直感的にする設定 */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 15px;
+      max-width: 450px;
+      margin: 0 auto;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+    }
+
+    .category-container {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    select {
+      font-size: 16px;
+      padding: 8px 12px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #meaning-text {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-top: 0;
+      margin-bottom: 15px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .option-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #2b2b2b;
+      background-color: #f1f3f5;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .option-btn:active {
+      background-color: #e9ecef;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🈴 四字熟語マスター</h2>
+
+  <div class="category-container">
+    <label for="tag-select">🏷️ カテゴリー選択:</label>
+    <select id="tag-select" onchange="filterQuiz()">
+      <option value="すべて">すべて</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <p id="meaning-text">💡 意味がここに表示されます</p>
+    <div id="options-container"></div>
+  </div>
+
+  <script>
+    // 📚 漢検1級レベルの四字熟語データ
+    const quizData = [
+      {
+        kanji: "曲学阿世",
+        reading: "きょくがくあせい",
+        meaning: "真理を曲げて、世間の人々や権力者に気に入られる説を唱えること。",
+        tag: "態度・批判",
+        options: ["曲学阿世", "雲蒸竜変", "攀竜附鳳", "晨煙暮靄"]
+      },
+      {
+        kanji: "晨煙暮靄",
+        reading: "しんえんぼあい",
+        meaning: "朝の煙ともや。自然の風景のたとえ。",
+        tag: "自然・情景",
+        options: ["晨煙暮靄", "曲学阿世", "面従腹背", "孤立無援"]
+      },
+      {
+        kanji: "雲蒸竜変",
+        reading: "うんじょうりゅうへん",
+        meaning: "英雄などが時代の変化や機会に乗じて湧き起き、活躍すること。",
+        tag: "行動・出世",
+        options: ["雲蒸竜変", "攀竜附鳳", "涵養勉励", "博覧強記"]
+      },
+      {
+        kanji: "攀竜附鳳",
+        reading: "はんりゅうふほう",
+        meaning: "実力のある人や権力者につき従って、自分も出世すること。",
+        tag: "行動・出世",
+        options: ["攀竜附鳳", "曲学阿世", "万紫千紅", "雲蒸竜変"]
+      },
+      {
+        kanji: "涵養勉励",
+        reading: "かんようべんれい",
+        meaning: "無理をしないように徐々に養い育て、学問などに励むこと。",
+        tag: "学問・努力",
+        options: ["涵養勉励", "博覧強記", "晨煙暮靄", "攀竜附鳳"]
+      }
+    ];
+
+    let currentFilteredQuiz = [];
+    let currentIndex = 0;
+
+    // 1. ドロップダウンにカテゴリーの選択肢を自動追加する関数
+    function initCategoryDropdown() {
+      const tagSelect = document.getElementById("tag-select");
+      const tags = [...new Set(quizData.map(q => q.tag))];
+      
+      tags.forEach(tag => {
+        const option = document.createElement("option");
+        option.value = tag;
+        option.textContent = tag;
+        tagSelect.appendChild(option);
+      });
+    }
+
+    // 2. 選択されたカテゴリーで問題を絞り込む関数
+    function filterQuiz() {
+      const selectedTag = document.getElementById("tag-select").value;
+      
+      if (selectedTag === "すべて") {
+        currentFilteredQuiz = [...quizData];
+      } else {
+        currentFilteredQuiz = quizData.filter(q => q.tag === selectedTag);
+      }
+      
+      currentIndex = 0;
+      showQuestion();
+    }
+
+    // 3. 画面に問題を表示する関数
+    function showQuestion() {
+      if (currentIndex >= currentFilteredQuiz.length) {
+        document.getElementById("meaning-text").innerText = "🎉 このカテゴリーの問題はすべて終了しました！";
+        document.getElementById("options-container").innerHTML = "";
+        return;
+      }
+
+      const currentQuiz = currentFilteredQuiz[currentIndex];
+      
+      document.getElementById("meaning-text").innerText = `💡 意味 (第${currentIndex + 1}問 / 全${currentFilteredQuiz.length}問) [${currentQuiz.tag}]:\n${currentQuiz.meaning}`;
+      
+      const optionsContainer = document.getElementById("options-container");
+      optionsContainer.innerHTML = "";
+
+      currentQuiz.options.forEach(option => {
+        const button = document.createElement("button");
+        button.innerText = option;
+        button.className = "option-btn";
+        button.onclick = () => checkAnswer(option, currentQuiz.kanji);
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    // 4. 正誤判定の関数
+    function checkAnswer(selected, correct) {
+      if (selected === correct) {
+        alert("⭕️ 正解です！");
+      } else {
+        alert(`❌ 不正解... 正解は「${correct}」でした。`);
+      }
+      
+      currentIndex++;
+      showQuestion();
+    }
+
+    // 5. 初期化処理（読み込み完了を待たずに即時実行）
+    initCategoryDropdown();
+    filterQuiz();
+  </script>
+</body>
+</html>
