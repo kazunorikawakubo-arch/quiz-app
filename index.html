@@ -4,208 +4,230 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>漢検1級 四字熟語マスター</title>
+
   <style>
-    /* 全体のボックス計算を直感的にする設定 */
     * {
       box-sizing: border-box;
     }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       padding: 15px;
       max-width: 450px;
       margin: 0 auto;
       background-color: #f8f9fa;
       color: #333;
     }
-
     h2 {
       text-align: center;
       margin-bottom: 20px;
       font-size: 1.4rem;
     }
-
-    .category-container {
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    select {
-      font-size: 16px;
-      padding: 8px 12px;
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: #fff;
-    }
-
     .card {
-      background: #ffffff;
-      border: 1px solid #e0e0e0;
+      background: white;
       border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    #meaning-text {
-      font-size: 1rem;
-      line-height: 1.6;
-      margin-top: 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       margin-bottom: 15px;
-      white-space: pre-wrap;
-      word-break: break-word;
     }
-
-    .option-btn {
-      display: block;
-      width: 100%;
+    .meta-info {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+    .reading {
+      font-size: 1.6rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 2px;
+      margin: 15px 0;
+      color: #1a73e8;
+    }
+    .meaning {
+      background-color: #f1f3f4;
       padding: 12px;
-      margin: 10px 0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    button {
+      padding: 12px 8px;
       font-size: 1.1rem;
       font-weight: bold;
-      color: #2b2b2b;
-      background-color: #f1f3f5;
-      border: 1px solid #ced4da;
+      border: 1px solid #dadce0;
       border-radius: 8px;
+      background-color: white;
       cursor: pointer;
-      transition: background-color 0.2s;
     }
-
-    .option-btn:active {
-      background-color: #e9ecef;
+    button:active {
+      background-color: #e8f0fe;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #dadce0;
+      margin-bottom: 15px;
+      background-color: white;
+    }
+    .score-box {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .score-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    .score-number {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #1a73e8;
+      margin-bottom: 15px;
+    }
+    .retry-btn {
+      width: 100%;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 1.1rem;
+    }
+    /* ルビ（振り仮名）の装飾設定 */
+    ruby {
+      ruby-position: over;
+    }
+    rt {
+      font-size: 0.6em;
+      color: #444;
+      font-weight: normal;
     }
   </style>
 </head>
 <body>
 
-  <h2>🈴 四字熟語マスター</h2>
+  <h2>漢検1級 四字熟語</h2>
 
-  <div class="category-container">
-    <label for="tag-select">🏷️ カテゴリー選択:</label>
-    <select id="tag-select" onchange="filterQuiz()">
-      <option value="すべて">すべて</option>
-    </select>
-  </div>
+  <select id="categorySelect" onchange="changeCategory()">
+    <option value="all">すべて表示</option>
+    <option value="あ行">あ行</option>
+    <option value="か行">か行</option>
+    <option value="さ行">さ行</option>
+    <option value="た行">た行</option>
+    <option value="は行">は行</option>
+  </select>
 
-  <div class="card">
-    <p id="meaning-text">💡 意味がここに表示されます</p>
-    <div id="options-container"></div>
-  </div>
+  <div id="quizContainer" class="card">
+    </div>
 
   <script>
-    // 📚 漢検1級レベルの四字熟語データ
     const quizData = [
-      {
-        kanji: "曲学阿世",
-        reading: "きょくがくあせい",
-        meaning: "真理を曲げて、世間の人々や権力者に気に入られる説を唱えること。",
-        tag: "態度・批判",
-        options: ["曲学阿世", "雲蒸竜変", "攀竜附鳳", "晨煙暮靄"]
-      },
-      {
-        kanji: "晨煙暮靄",
-        reading: "しんえんぼあい",
-        meaning: "朝の煙ともや。自然の風景のたとえ。",
-        tag: "自然・情景",
-        options: ["晨煙暮靄", "曲学阿世", "面従腹背", "孤立無援"]
-      },
-      {
-        kanji: "雲蒸竜変",
-        reading: "うんじょうりゅうへん",
-        meaning: "英雄などが時代の変化や機会に乗じて湧き起き、活躍すること。",
-        tag: "行動・出世",
-        options: ["雲蒸竜変", "攀竜附鳳", "涵養勉励", "博覧強記"]
-      },
-      {
-        kanji: "攀竜附鳳",
-        reading: "はんりゅうふほう",
-        meaning: "実力のある人や権力者につき従って、自分も出世すること。",
-        tag: "行動・出世",
-        options: ["攀竜附鳳", "曲学阿世", "万紫千紅", "雲蒸竜変"]
-      },
-      {
-        kanji: "涵養勉励",
-        reading: "かんようべんれい",
-        meaning: "無理をしないように徐々に養い育て、学問などに励むこと。",
-        tag: "学問・努力",
-        options: ["涵養勉励", "博覧強記", "晨煙暮靄", "攀竜附鳳"]
-      }
+      { kanji: "哀鴻遍野", reading: "あいこうへんや", meaning: "戦乱や災害などで流浪し、飢えや苦しみにあえぐ人々がいたるところに満ちているさま。", category: "あ行" },
+      { kanji: "悪衣悪食", reading: "あくいあくしょく", meaning: "粗末な衣服と粗末な食べ物。また、そのような貧しい生活。", category: "あ行" },
+      { kanji: "暗香浮動", reading: "あんこうふどう", meaning: "どこからともなく梅の花のよい香りが漂ってくるさま。", category: "あ行" },
+      { kanji: "意気揚揚", reading: "いきようよう", meaning: "得意そうで誇らしげなさま。元気や満足感に満ちあふれているさま。", category: "あ行" },
+      { kanji: "一言九鼎", reading: "いちげんきゅうてい", meaning: "一言の発言が九鼎（きわめて重い鼎）のように重みがあり、大きな影響力をもつこと。", category: "あ行" },
+      { kanji: "佳人薄命", reading: "かじんはくめい", meaning: "美人にはとかく不幸な者や若死にする者が多いということ。", category: "か行" },
+      { kanji: "夏炉冬扇", reading: "かろとうせん", meaning: "夏のいろりと冬のおうぎ。役に立たない無用なもののたとえ。", category: "か行" },
+      { kanji: "巧言令色", reading: "こうげんれいしょく", meaning: "言葉を飾り、顔つきを繕って、人に気に入られようとすること。", category: "か行" },
+      { kanji: "三尺童子", reading: "さんしゃくどうじ", meaning: "背丈が三尺ほどの幼い子供。転じて、知識や経験の浅い者のたとえ。", category: "さ行" },
+      { kanji: "紫気東来", reading: "しきとうらい", meaning: "めでたい気（めでたい兆し）が東から漂ってくること。吉兆のたとえ。", category: "さ行" },
+      { kanji: "泰山北斗", reading: "たいざんほくと", meaning: "学問・芸術など、ある分野で第一人者として仰ぎ尊ばれる人のたとえ。", category: "た行" },
+      { kanji: "百八煩悩", reading: "ひゃくはちぼんのう", meaning: "人間にあるすべての苦しみや迷いの原因となる悩みのこと。", category: "は行" }
     ];
 
     let currentFilteredQuiz = [];
     let currentIndex = 0;
+    let score = 0;
 
-    // 1. ドロップダウンにカテゴリーの選択肢を自動追加する関数
-    function initCategoryDropdown() {
-      const tagSelect = document.getElementById("tag-select");
-      const tags = [...new Set(quizData.map(q => q.tag))];
-      
-      tags.forEach(tag => {
-        const option = document.createElement("option");
-        option.value = tag;
-        option.textContent = tag;
-        tagSelect.appendChild(option);
-      });
+    // 漢字の上に小さい振り仮名（ルビ）を付ける関数
+    function makeRubyHTML(kanji, reading) {
+      return `<ruby>${kanji}<rt>${reading}</rt></ruby>`;
     }
 
-    // 2. 選択されたカテゴリーで問題を絞り込む関数
-    function filterQuiz() {
-      const selectedTag = document.getElementById("tag-select").value;
-      
-      if (selectedTag === "すべて") {
+    function changeCategory() {
+      const selectedCategory = document.getElementById("categorySelect").value;
+      if (selectedCategory === "all") {
         currentFilteredQuiz = [...quizData];
       } else {
-        currentFilteredQuiz = quizData.filter(q => q.tag === selectedTag);
+        currentFilteredQuiz = quizData.filter(item => item.category === selectedCategory);
       }
-      
+      restartQuiz();
+    }
+
+    function restartQuiz() {
       currentIndex = 0;
+      score = 0;
       showQuestion();
     }
 
-    // 3. 画面に問題を表示する関数
-    function showQuestion() {
-      if (currentIndex >= currentFilteredQuiz.length) {
-        document.getElementById("meaning-text").innerText = "🎉 このカテゴリーの問題はすべて終了しました！";
-        document.getElementById("options-container").innerHTML = "";
-        return;
-      }
-
-      const currentQuiz = currentFilteredQuiz[currentIndex];
-      
-      document.getElementById("meaning-text").innerText = `💡 意味 (第${currentIndex + 1}問 / 全${currentFilteredQuiz.length}問) [${currentQuiz.tag}]:\n${currentQuiz.meaning}`;
-      
-      const optionsContainer = document.getElementById("options-container");
-      optionsContainer.innerHTML = "";
-
-      currentQuiz.options.forEach(option => {
-        const button = document.createElement("button");
-        button.innerText = option;
-        button.className = "option-btn";
-        button.onclick = () => checkAnswer(option, currentQuiz.kanji);
-        optionsContainer.appendChild(button);
-      });
+    function getRandomOptions(correctKanji) {
+      const allKanji = quizData.map(item => item.kanji);
+      const wrongOptions = allKanji.filter(kanji => kanji !== correctKanji);
+      const shuffledWrong = wrongOptions.sort(() => 0.5 - Math.random());
+      const selectedWrong = shuffledWrong.slice(0, 3);
+      const options = [correctKanji, ...selectedWrong];
+      return options.sort(() => 0.5 - Math.random());
     }
 
-    // 4. 正誤判定の関数
-    function checkAnswer(selected, correct) {
+    function checkAnswer(selected, correct, reading) {
       if (selected === correct) {
-        alert("⭕️ 正解です！");
+        alert(`⭕️ 正解です！\n【${correct}（${reading}）】`);
+        score++;
       } else {
-        alert(`❌ 不正解... 正解は「${correct}」でした。`);
+        alert(`❌ 不正解...\n正解は「${correct}（${reading}）」でした。`);
       }
-      
       currentIndex++;
       showQuestion();
     }
 
-    // 5. 初期化処理（読み込み完了を待たずに即時実行）
-    initCategoryDropdown();
-    filterQuiz();
+    function showQuestion() {
+      const container = document.getElementById("quizContainer");
+
+      if (currentFilteredQuiz.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>このカテゴリーには問題がありません。</p>";
+        return;
+      }
+
+      if (currentIndex >= currentFilteredQuiz.length) {
+        const percentage = Math.round((score / currentFilteredQuiz.length) * 100);
+        container.innerHTML = `
+          <div class="score-box">
+            <div class="score-title">🎉 お疲れ様でした！</div>
+            <div class="score-number">${score} / ${currentFilteredQuiz.length} 問正解</div>
+            <p>正解率: <strong>${percentage}%</strong></p>
+            <button class="retry-btn" onclick="restartQuiz()">もう一度挑戦する 🔄</button>
+          </div>
+        `;
+        return;
+      }
+
+      const q = currentFilteredQuiz[currentIndex];
+      const options = getRandomOptions(q.kanji);
+
+      // 問題画面：問題提示（ひらがな）＋選択肢（答えバレ防止のためルビ無し）
+      container.innerHTML = `
+        <div class="meta-info">
+          <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}</span>
+          <span>カテゴリ: ${q.category}</span>
+        </div>
+        <div class="reading">${q.reading}</div>
+        <div class="meaning">【意味】<br>${q.meaning}</div>
+        <div class="options">
+          ${options.map(opt => `<button onclick="checkAnswer('${opt}', '${q.kanji}', '${q.reading}')">${opt}</button>`).join('')}
+        </div>
+      `;
+    }
+
+    // 初回起動
+    changeCategory();
   </script>
 </body>
 </html>
