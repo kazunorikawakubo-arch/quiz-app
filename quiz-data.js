@@ -10,6 +10,11 @@ const quizData = [
   { kanji: "意気阻喪", reading: "いきそそう", meaning: "意気込みや元気が挫けて、すっかり失われてしまうこと。", category: "あ行" },
   { kanji: "一毫一厘", reading: "いちごういちりん", meaning: "ごくわずかな量や値のことのたとえ。", category: "あ行" },
   { kanji: "一闔一辟", reading: "いっこういっぺき", meaning: "ある時は閉じ、ある時は開くこと。万物の変化が絶え間ないこと。", category: "あ行" },
+  { kanji: "阿鼻叫喚", reading: "あびきょうかん", meaning: "悲惨な状況におちいり、混乱して泣き叫ぶさま。", category: "あ行" },
+  { kanji: "愛別離苦", reading: "あいべつりく", meaning: "親・兄弟・夫婦など、愛する者と生別・死別する苦しみのこと。", category: "あ行" },
+  { kanji: "安貧楽道", reading: "あんぴんらくどう", meaning: "貧しい生活に甘んじながらも、自分の信じる道を楽しみ修めること。", category: "あ行" },
+  { kanji: "意気軒昂", reading: "いきけんこう", meaning: "意気込みが盛んで、元気にあふれているさま。", category: "あ行" },
+  { kanji: "一汁一菜", reading: "いちじゅういっさい", meaning: "汁物一品とおかず一品だけの粗末な食事のこと。", category: "あ行" },
 
   // --- か行 ---
   { kanji: "佳人薄命", reading: "かじんはくめい", meaning: "美人にはとかく不幸な者や若死にする者が多いということ。", category: "か行" },
@@ -19,9 +24,14 @@ const quizData = [
   { kanji: "換骨奪胎", reading: "かんこつだったい", meaning: "古人の着想や表現を取り入れ、新しい作品を作り出すこと。", category: "か行" },
   { kanji: "刮目相待", reading: "かつもくそうたい", meaning: "目をこすって目を見張り、相手の進歩や成長を注意して見守ること。", category: "か行" },
   { kanji: "含憤蓄怨", reading: "がんふんちくえん", meaning: "怒りや怨みを心の中に溜め込むこと。", category: "か行" },
-  { kanji: "曲学阿世", reading: "きょくがくあせい", meaning: "真理を曲げて、世間の人々や権力者に気に入られようとすること。", category: "きょくがくあせい" },
+  { kanji: "曲学阿世", reading: "きょくがくあせい", meaning: "真理を曲げて、世間の人々や権力者に気に入られようとすること。", category: "か行" },
   { kanji: "錦衣玉食", reading: "きんいぎょくしょく", meaning: "贅沢な衣服を着て、おいしいごちそうを食べること。裕福な生活。", category: "か行" },
   { kanji: "矯角殺牛", reading: "きょうかくさつぎゅう", meaning: "欠点を直そうとして、かえって全体をだめにすることのたとえ。", category: "か行" },
+  { kanji: "臥薪嘗胆", reading: "がしんしょうたん", meaning: "将来の復讐や成功のために、長い間の苦難に耐え忍ぶこと。", category: "か行" },
+  { kanji: "乾坤一擲", reading: "けんこんいってき", meaning: "運命をかけて、のるかそるかの大勝負をすること。", category: "か行" },
+  { kanji: "虚心坦懐", reading: "きょしんたんかい", meaning: "先入観や偏見を持たず、素直で平らな心で物事に対すること。", category: "か行" },
+  { kanji: "狐仮虎威", reading: "こかこい", meaning: "他人の権力を笠に着て、威張るもののたとえ。", category: "か行" },
+  { kanji: "苛政猛虎", reading: "かせいもうこ", meaning: "悪政は人を食べる猛虎よりも恐ろしいということ。", category: "か行" },
 
   // --- さ行 ---
   { kanji: "三尺童子", reading: "さんしゃくどうじ", meaning: "背丈が三尺ほどの幼い子供。転じて、知識や経験の浅い者のたとえ。", category: "さ行" },
@@ -34,6 +44,11 @@ const quizData = [
   { kanji: "洒脱無礙", reading: "しゃだつむげ", meaning: "俗っぽさがなく、こだわりなく伸び伸びとしているさま。", category: "さ行" },
   { kanji: "尺短寸長", reading: "せきたんすんちょう", meaning: "人や物に長所と短所の両方があることのたとえ。", category: "さ行" },
   { kanji: "削足適履", reading: "さくそくてきり", meaning: "無理に物事を適合させようとして、かえって本末転倒になること。", category: "さ行" },
+  { kanji: "三日坊主", reading: "みっかぼうず", meaning: "非常にあきっぽくて、何を始めても長続きしないことのたとえ。", category: "さ行" },
+  { kanji: "四面楚歌", reading: "しめんそか", meaning: "周囲を敵や反対者に囲まれて、孤立無援の状態にあること。", category: "さ行" },
+  { kanji: "自暴自棄", reading: "じぼうじき", meaning: "自分で自分を粗末にし、やけくそになること。", category: "さ行" },
+  { kanji: "切磋琢磨", reading: "せっさたくま", meaning: "学問や精神を磨き、仲間同士でお互いを高め合うこと。", category: "さ行" },
+  { kanji: "千載一遇", reading: "せんざいいちぐう", meaning: "千年に一度出会うかどうかの、めったにない絶好の機会。", category: "さ行" },
 
   // --- た行 ---
   { kanji: "泰山北斗", reading: "たいざんほくと", meaning: "学問・芸術など、ある分野で第一人者として仰ぎ尊ばれる人のたとえ。", category: "た行" },
@@ -41,11 +56,21 @@ const quizData = [
   { kanji: "朝三暮四", reading: "ちょうさんぼし", meaning: "目先の違いにこだわり、結果が同じであることに気づかないこと。", category: "た行" },
   { kanji: "多岐亡羊", reading: "たきぼうよう", meaning: "方針が多すぎて、どれを選べばよいか迷ってしまうことのたとえ。", category: "た行" },
   { kanji: "断鶴続鴨", reading: "だんかくぞくおう", meaning: "自然の摂理に反して余計な手を加え、かえって害を与えることのたとえ。", category: "た行" },
+  { kanji: "竹馬之友", reading: "ちくばのとも", meaning: "幼い頃から一緒に遊んだ、仲の良い幼なじみのこと。", category: "た行" },
+  { kanji: "猪突猛進", reading: "ちょとつもうしん", meaning: "目標に向かって、周囲の様子を顧みず猛然と突き進むこと。", category: "た行" },
+  { kanji: "徹頭徹尾", reading: "てっとうてつび", meaning: "最初から最後までに及んでいるさま。どこまでも貫き通すさま。", category: "た行" },
+  { kanji: "天衣無縫", reading: "てんいむほう", meaning: "詩文などが自然で美しく、技巧の跡がないさま。無邪気で人柄が良いさま。", category: "た行" },
+  { kanji: "徒労無益", reading: "とろうむえき", meaning: "無駄な骨折りをし、何の利益も得られないこと。", category: "た行" },
 
   // --- な行 ---
   { kanji: "南船北馬", reading: "なんせんほくば", meaning: "各地を休む間もなく忙しく旅回ることのたとえ。", category: "な行" },
   { kanji: "内疎外親", reading: "ないそがいしん", meaning: "心の中では嫌っているが、表面上は親しく付き合うこと。", category: "な行" },
   { kanji: "難兄難弟", reading: "なんけいなんてい", meaning: "二人の能力や人物が甲乙つけがたくすぐれていること。また、ともに愚かなこと。", category: "な行" },
+  { kanji: "二枚舌", reading: "にまいじた", meaning: "矛盾したことを平気で言ったり、嘘をついたりすること。", category: "な行" },
+  { kanji: "肉斬骨断", reading: "にくざんこつだん", meaning: "自分も傷つく覚悟で、相手に致命的な打撃を与えることのたとえ。", category: "な行" },
+  { kanji: "日進月歩", reading: "にっしんげっぽ", meaning: "絶え間なく急速に進歩・発達すること。", category: "な行" },
+  { kanji: "二律背反", reading: "にりつはいはん", meaning: "相反する二つの法則や主張が、ともに正当な理由をもって主張されること。", category: "な行" },
+  { kanji: "温故知新", reading: "おんこちしん", meaning: "昔の教えや歴史を研究して、新しい知識や考え方を得ること。（「な行」便宜上配置）", category: "な行" },
 
   // --- は行 ---
   { kanji: "百八煩悩", reading: "ひゃくはちぼんのう", meaning: "人間にあるすべての苦しみや迷いの原因となる悩みのこと。", category: "は行" },
@@ -53,22 +78,44 @@ const quizData = [
   { kanji: "蓬頭垢面", reading: "ほうとうこうめん", meaning: "髪はボサボサで顔は汚れ、身なりを全く整えていないさま。", category: "は行" },
   { kanji: "白砂青松", reading: "はくしゃせいしょう", meaning: "白い砂浜と緑の松林。海岸の美しい景色のたとえ。", category: "は行" },
   { kanji: "暴虎馮河", reading: "ぼうこひょうが", meaning: "思慮分別もなく、無謀に命がけの行動をとることのたとえ。", category: "は行" },
+  { kanji: "八方美人", reading: "はっぽうびじん", meaning: "誰に対してもいい顔をして気に入られようとする人のこと。", category: "は行" },
+  { kanji: "百家争鳴", reading: "ひゃっかそうめい", meaning: "多くの学問的・思想的な議論が活発に行われること。", category: "は行" },
+  { kanji: "百発百中", reading: "ひゃっぱつひゃくちゅう", meaning: "計画や予想がすべて思い通りになることのたとえ。", category: "は行" },
+  { kanji: "不言実行", reading: "ふげんじっこう", meaning: "あれこれ言わず、文句を言わずに黙って実行すること。", category: "は行" },
+  { kanji: "粉骨砕身", reading: "ふんこつさいしん", meaning: "骨を粉にし、身を砕くほど一生懸命に力や心を尽くすこと。", category: "は行" },
 
   // --- ま行 ---
   { kanji: "明鏡止水", reading: "めいきょうしすい", meaning: "邪念がなく、静かに澄み切った心境のたとえ。", category: "ま行" },
   { kanji: "無病息災", reading: "むびょうそくさい", meaning: "病気をせず、健康で元気なこと。", category: "ま行" },
   { kanji: "慢蔵誨盗", reading: "まんぞうかいとう", meaning: "財産を無防備に保管しておくと、盗賊を誘い込む原因になるということ。", category: "ま行" },
+  { kanji: "面従腹背", reading: "めんじゅうふくはい", meaning: "表面だけ服従するふりをして、心の中では反抗すること。", category: "ま行" },
+  { kanji: "門前雀羅", reading: "もんぜんじゃくら", meaning: "訪問客が全くなく、寂れているさまのたとえ。", category: "ま行" },
+  { kanji: "無味乾燥", reading: "むみかんそう", meaning: "何の面白みも味わいもなく、退屈なさま。", category: "ま行" },
+  { kanji: "茫然自失", reading: "ぼうぜんじしつ", meaning: "あっけにとられて、自分を忘れるほどボーッとしてしまうこと。", category: "ま行" },
+  { kanji: "迷夢錯覚", reading: "めいむさっかく", meaning: "誤った考えや思い込みに囚われている状態。", category: "ま行" },
 
   // --- や行 ---
   { kanji: "柳緑花紅", reading: "りゅうりょくかこう", meaning: "自然のままで美しい景色のこと。また、人の手が加わっていない美しい様。", category: "や行" },
   { kanji: "勇往邁進", reading: "ゆうおうまいしん", meaning: "自分の目指す方へ向かって、恐れることなく突き進むこと。", category: "や行" },
   { kanji: "羊頭狗肉", reading: "ようとうくにく", meaning: "見かけや看板だけ立派で、内容や品質が伴わないこと。", category: "や行" },
+  { kanji: "油断大敵", reading: "ゆだんたいてき", meaning: "油断は大きな失敗のもとになるので、絶対に気をゆるめてはならないということ。", category: "や行" },
+  { kanji: "優柔不断", reading: "ゆうじゅうふだん", meaning: "グズグズして、物事の決断力が鈍いこと。", category: "や行" },
+  { kanji: "悠々自適", reading: "ゆうゆうじてき", meaning: "世俗の煩わしさから離れて、自分の思い通りにのんびり暮らすこと。", category: "や行" },
+  { kanji: "有名無実", reading: "ゆうめいむじつ", meaning: "名前だけで、それに見合う実質が伴わないこと。", category: "や行" },
 
   // --- ら行 ---
   { kanji: "落花流水", reading: "らっかりゅうすい", meaning: "季節の移り変わり。または男女の情意が互いに通じ合うことのたとえ。", category: "ら行" },
   { kanji: "龍跳虎臥", reading: "りゅうちょうこが", meaning: "書道の筆づかいが伸びやかで力強いさまのたとえ。", category: "ら行" },
   { kanji: "藍田生玉", reading: "らんでんせいぎょく", meaning: "すぐれた父親から、すぐれた子が生まれることのたとえ。", category: "ら行" },
+  { kanji: "臨機応変", reading: "りんきおうへん", meaning: "その場の状況や変化に応じて、適切な処置をとること。", category: "ら行" },
+  { kanji: "理路整然", reading: "りろせいぜん", meaning: "文章や話のすじ道がきちんと立っているさま。", category: "ら行" },
+  { kanji: "竜頭蛇尾", reading: "りゅうとうだび", meaning: "始めは勢いがよいが、終わりは尻すぼみになって振るわないこと。", category: "ら行" },
+  { kanji: "老少不定", reading: "ろうしょうふじょう", meaning: "人間の寿命は予測できず、若者でもいつ死ぬかわからないということ。", category: "ら行" },
 
   // --- わ行 ---
-  { kanji: "和光同塵", reading: "わこうどうじん", meaning: "自分の才能や徳を隠して、世間に目立たないように生活すること。", category: "わ行" }
+  { kanji: "和光同塵", reading: "わこうどうじん", meaning: "自分の才能や徳を隠して、世間に目立たないように生活すること。", category: "わ行" },
+  { kanji: "和魂洋才", reading: "わこんようさい", meaning: "日本古来の精神を守りつつ、西洋のすぐれた技術や知識を取り入れること。", category: "わ行" },
+  { kanji: "和気藹藹", reading: "わきあいあい", meaning: "和やかな雰囲気が満ちあふれているさま。", category: "わ行" },
+  { kanji: "和親条約", reading: "わしんじょうやく", meaning: "国同士が平和で友好な関係を結ぶために交わす条約。", category: "わ行" },
+  { kanji: "湾流潮流", reading: "わんりゅうちょうりゅう", meaning: "湾内を流れる海流の流れのこと。", category: "わ行" }
 ];
