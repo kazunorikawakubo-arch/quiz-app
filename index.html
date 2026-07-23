@@ -198,7 +198,6 @@
       const q = currentFilteredQuiz[currentIndex];
       const options = getRandomOptions(q);
 
-      // 青文字の読み（ひらがな）を削除し、【意味】と選択肢のみ表示
       container.innerHTML = `
         <div class="meta-info">
           <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}</span>
