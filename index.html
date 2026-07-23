@@ -202,7 +202,6 @@
     // ダミーの選択肢を取得する汎用関数
     function getRandomOptions(correctItem, key) {
       let wrongItems = quizData.filter(item => item[key] !== correctItem[key]);
-      // 重複する値を除外
       let uniqueWrong = [];
       let seen = new Set();
       for (let item of wrongItems) {
@@ -225,8 +224,8 @@
       return filtered.slice(0, 3);
     }
 
-    function checkAnswer(isCorrect, fullKanji, reading, meaning) {
-      if (isCorrect) {
+    function checkAnswer(selectedVal, correctVal, fullKanji, reading, meaning) {
+      if (selectedVal === correctVal) {
         alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
         score++;
       } else {
@@ -276,7 +275,7 @@
           <div class="meaning">【意味】<br>${q.meaning}</div>
           <div class="options">
             ${options.map(char => `
-              <button class="option-btn" onclick="checkAnswer('${char === targetChar}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+              <button class="option-btn" onclick="checkAnswer('${char}', '${targetChar}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
                 ${char}
               </button>
             `).join('')}
@@ -296,7 +295,7 @@
           <div class="meaning">【意味】<br>${q.meaning}</div>
           <div class="options">
             ${options.map(opt => `
-              <button class="option-btn" onclick="checkAnswer('${opt.reading === q.reading}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+              <button class="option-btn" onclick="checkAnswer('${opt.reading}', '${q.reading}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
                 ${opt.reading}
               </button>
             `).join('')}
@@ -316,7 +315,7 @@
           <div style="text-align:center; color:#666; margin-bottom:15px;">（${q.reading}）</div>
           <div class="options vertical">
             ${options.map(opt => `
-              <button class="option-btn" onclick="checkAnswer('${opt.meaning === q.meaning}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+              <button class="option-btn" onclick="checkAnswer('${opt.meaning.replace(/'/g, "\\'")}', '${q.meaning.replace(/'/g, "\\'")}', '${q.kanji}', '${q.reading}', '${q.meaning.replace(/'/g, "\\'")}')">
                 ${opt.meaning}
               </button>
             `).join('')}
