@@ -101,7 +101,6 @@
       padding: 14px;
       font-size: 1.1rem;
     }
-    /* 選択肢ボタンのルビ設定 */
     ruby {
       ruby-position: over;
     }
@@ -126,7 +125,6 @@
   </select>
 
   <div id="quizContainer" class="card">
-    <!-- クイズ画面 -->
   </div>
 
   <script>
@@ -165,7 +163,6 @@
       showQuestion();
     }
 
-    // 選択肢（漢字＋読み）を取得する関数
     function getRandomOptions(correctItem) {
       const wrongItems = quizData.filter(item => item.kanji !== correctItem.kanji);
       const shuffledWrong = wrongItems.sort(() => 0.5 - Math.random());
@@ -209,7 +206,6 @@
       const q = currentFilteredQuiz[currentIndex];
       const options = getRandomOptions(q);
 
-      // 選択肢ボタン内の漢字の上に振り仮名（<ruby>）を表示
       container.innerHTML = `
         <div class="meta-info">
           <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}</span>
@@ -227,7 +223,6 @@
       `;
     }
 
-    // 初回起動
     changeCategory();
   </script>
 </body>
