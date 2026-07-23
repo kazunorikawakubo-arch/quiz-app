@@ -22,7 +22,6 @@
       margin-bottom: 15px;
       font-size: 1.4rem;
     }
-    /* モード切り替えタブ */
     .mode-container {
       display: flex;
       gap: 6px;
@@ -80,13 +79,12 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    /* 意味選択モード用（選択肢が長いため1列表示） */
     .options.vertical {
       grid-template-columns: 1fr;
     }
     .option-btn {
       padding: 14px 8px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
       border: 1px solid #dadce0;
       border-radius: 8px;
@@ -153,9 +151,8 @@
 </head>
 <body>
 
-  <h2>漢検1級 四字熟語</h2>
+  <h2>漢検1級 四字熟語マスター</h2>
 
-  <!-- モード切替タブ -->
   <div class="mode-container">
     <button id="mode-blank" class="mode-btn active" onclick="switchMode('blank')">🧩 穴埋め</button>
     <button id="mode-reading" class="mode-btn" onclick="switchMode('reading')">📖 読み</button>
@@ -179,15 +176,24 @@
   <div id="quizContainer" class="card">
   </div>
 
-  <!-- 外部問題データ -->
   <script src="quiz-data.js"></script>
 
   <script>
-    let currentMode = 'blank'; // 'blank', 'reading', 'meaning'
+    let currentMode = 'blank';
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
-    let wrongQuestions = []; // 間違えた問題を保存する配列 📝
+    let wrongQuestions = [];
+
+    // 似た音・濁音への変換マップ 🔤
+    const similarSoundMap = {
+      'か':'が','が':'か','き':'ぎ','ぎ':'き','く':'ぐ','ぐ':'く','け':'げ','げ':'け','こ':'ご','ご':'こ',
+      'さ':'ざ','ざ':'さ','し':'じ','じ':'し','す':'ず','ず':'す','せ':'ぜ','ぜ':'せ','そ':'ぞ','ぞ':'そ',
+      'た':'だ','だ':'た','ち':'ぢ','ぢ':'ち','つ':'づ','づ':'つ','て':'で','で':'て','と':'ど','ど':'と',
+      'は':'ば','ば':'は','ひ':'び','び':'ひ','ふ':'ぶ','ぶ':'ふ','へ':'べ','べ':'へ','ほ':'ぼ','ぼ':'ほ',
+      'あ':'お','い':'え','う':'お','え':'い','お':'う',
+      'き':'け','し':'せ','ち':'て','ひ':'へ'
+    };
 
     function switchMode(mode) {
       currentMode = mode;
@@ -209,11 +215,10 @@
     function restartQuiz() {
       currentIndex = 0;
       score = 0;
-      wrongQuestions = []; // 間違いリストをリセット 🔄
+      wrongQuestions = [];
       showQuestion();
     }
 
-    // 間違えた問題だけで再スタートする関数 🔄
     function startReviewMode() {
       currentFilteredQuiz = [...wrongQuestions];
       currentIndex = 0;
@@ -222,7 +227,42 @@
       showQuestion();
     }
 
-    // ダミーの選択肢を取得する汎用関数
+    // 「読み」モード用の似た音ダミー作成関数 🔊
+    function generateSimilarReading(reading) {
+      let chars = reading.split('');
+      let candidates = [];
+      for (let i = 0; i < chars.length; i++) {
+        if (similarSoundMap[chars[i]]) {
+          candidates.push(i);
+        }
+      }
+      if (candidates.length === 0) return reading;
+      
+      let targetIndex = candidates[Math.floor(Math.random() * candidates.length)];
+      chars[targetIndex] = similarSoundMap[chars[targetIndex]];
+      return chars.join('');
+    }
+
+    function getSimilarReadingOptions(correctReading) {
+      let options = new Set([correctReading]);
+      let attempts = 0;
+      while (options.size < 4 && attempts < 30) {
+        let dummy = generateSimilarReading(correctReading);
+        options.add(dummy);
+        attempts++;
+      }
+      // 不足した場合は他の問題の読みで補完
+      if (options.size < 4) {
+        let others = quizData.map(item => item.reading).filter(r => !options.has(r));
+        others.sort(() => 0.5 - Math.random());
+        for (let r of others) {
+          options.add(r);
+          if (options.size === 4) break;
+        }
+      }
+      return Array.from(options).sort(() => 0.5 - Math.random());
+    }
+
     function getRandomOptions(correctItem, key) {
       let wrongItems = quizData.filter(item => item[key] !== correctItem[key]);
       let uniqueWrong = [];
@@ -239,7 +279,6 @@
       return options.sort(() => 0.5 - Math.random());
     }
 
-    // 穴埋め用のダミー漢字を取得
     function getRandomDummyKanji(correctChar) {
       let allChars = quizData.map(item => item.kanji).join("").split("");
       let filtered = [...new Set(allChars.filter(c => c !== correctChar))];
@@ -255,7 +294,6 @@
         score++;
       } else {
         alert(`❌ 不正解...\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
-        // 間違えた問題をリストに追加（重複防止）
         if (!wrongQuestions.includes(currentQuestion)) {
           wrongQuestions.push(currentQuestion);
         }
@@ -299,7 +337,6 @@
       const q = currentFilteredQuiz[currentIndex];
 
       if (currentMode === 'blank') {
-        // --- 穴埋めモード ---
         const blankIndex = Math.floor(Math.random() * 4);
         const targetChar = q.kanji[blankIndex];
         const maskedKanji = q.kanji.substring(0, blankIndex) + "〇" + q.kanji.substring(blankIndex + 1);
@@ -323,8 +360,8 @@
         `;
 
       } else if (currentMode === 'reading') {
-        // --- 読みモード ---
-        const options = getRandomOptions(q, 'reading');
+        // 似た音の選択肢を取得 🎧
+        const options = getSimilarReadingOptions(q.reading);
 
         container.innerHTML = `
           <div class="meta-info">
@@ -335,15 +372,14 @@
           <div class="meaning">【意味】<br>${q.meaning}</div>
           <div class="options">
             ${options.map(opt => `
-              <button class="option-btn" onclick="checkAnswer('${opt.reading}', '${q.reading}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
-                ${opt.reading}
+              <button class="option-btn" onclick="checkAnswer('${opt}', '${q.reading}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+                ${opt}
               </button>
             `).join('')}
           </div>
         `;
 
       } else if (currentMode === 'meaning') {
-        // --- 意味選択モード ---
         const options = getRandomOptions(q, 'meaning');
 
         container.innerHTML = `
