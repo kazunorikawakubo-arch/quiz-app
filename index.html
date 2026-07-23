@@ -136,6 +136,18 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .review-btn {
+      width: 100%;
+      background-color: #e37400;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -175,6 +187,7 @@
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
+    let wrongQuestions = []; // 間違えた問題を保存する配列 📝
 
     function switchMode(mode) {
       currentMode = mode;
@@ -196,6 +209,16 @@
     function restartQuiz() {
       currentIndex = 0;
       score = 0;
+      wrongQuestions = []; // 間違いリストをリセット 🔄
+      showQuestion();
+    }
+
+    // 間違えた問題だけで再スタートする関数 🔄
+    function startReviewMode() {
+      currentFilteredQuiz = [...wrongQuestions];
+      currentIndex = 0;
+      score = 0;
+      wrongQuestions = [];
       showQuestion();
     }
 
@@ -225,11 +248,17 @@
     }
 
     function checkAnswer(selectedVal, correctVal, fullKanji, reading, meaning) {
+      const currentQuestion = currentFilteredQuiz[currentIndex];
+
       if (selectedVal === correctVal) {
         alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
         score++;
       } else {
         alert(`❌ 不正解...\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
+        // 間違えた問題をリストに追加（重複防止）
+        if (!wrongQuestions.includes(currentQuestion)) {
+          wrongQuestions.push(currentQuestion);
+        }
       }
       currentIndex++;
       showQuestion();
@@ -245,12 +274,23 @@
 
       if (currentIndex >= currentFilteredQuiz.length) {
         const percentage = Math.round((score / currentFilteredQuiz.length) * 100);
+        
+        let reviewButtonHtml = "";
+        if (wrongQuestions.length > 0) {
+          reviewButtonHtml = `
+            <button class="review-btn" onclick="startReviewMode()">
+              間違えた ${wrongQuestions.length} 問を復習する 🔄
+            </button>
+          `;
+        }
+
         container.innerHTML = `
           <div class="score-box">
             <div class="score-title">🎉 お疲れ様でした！</div>
             <div class="score-number">${score} / ${currentFilteredQuiz.length} 問正解</div>
             <p>正解率: <strong>${percentage}%</strong></p>
-            <button class="retry-btn" onclick="restartQuiz()">もう一度挑戦する 🔄</button>
+            ${reviewButtonHtml}
+            <button class="retry-btn" onclick="restartQuiz()">最初から解き直す 🔄</button>
           </div>
         `;
         return;
