@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>漢検1級 四字熟語マスター</title>
+  <title>漢検1級 四字熟語穴埋め</title>
 
   <style>
     * {
@@ -36,6 +36,14 @@
       font-size: 0.9rem;
       margin-bottom: 15px;
     }
+    .question-kanji {
+      font-size: 2.2rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 4px;
+      margin: 15px 0;
+      color: #1a73e8;
+    }
     .meaning {
       background-color: #f1f3f4;
       padding: 15px;
@@ -47,17 +55,16 @@
     .options {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
     }
     button {
-      padding: 14px 6px;
-      font-size: 1.05rem;
+      padding: 16px 6px;
+      font-size: 1.5rem;
       font-weight: bold;
       border: 1px solid #dadce0;
       border-radius: 8px;
       background-color: white;
       cursor: pointer;
-      line-height: 1.4;
     }
     button:active {
       background-color: #e8f0fe;
@@ -93,19 +100,11 @@
       padding: 14px;
       font-size: 1.1rem;
     }
-    ruby {
-      ruby-position: over;
-    }
-    rt {
-      font-size: 0.6em;
-      color: #555;
-      font-weight: normal;
-    }
   </style>
 </head>
 <body>
 
-  <h2>漢検1級 四字熟語</h2>
+  <h2>漢検1級 四字熟語穴埋め</h2>
 
   <select id="categorySelect" onchange="changeCategory()">
     <option value="all">すべて表示</option>
@@ -180,6 +179,7 @@
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
+    let targetChar = ""; // 正解の漢字
 
     function changeCategory() {
       const selectedCategory = document.getElementById("categorySelect").value;
@@ -197,20 +197,24 @@
       showQuestion();
     }
 
-    function getRandomOptions(correctItem) {
-      const wrongItems = quizData.filter(item => item.kanji !== correctItem.kanji);
-      const shuffledWrong = wrongItems.sort(() => 0.5 - Math.random());
-      const selectedWrong = shuffledWrong.slice(0, 3);
-      const options = [correctItem, ...selectedWrong];
-      return options.sort(() => 0.5 - Math.random());
+    // 他の問題データからダミーの漢字を取得する
+    function getRandomDummyKanji(correctKanji) {
+      let allKanjiChars = quizData.map(item => item.kanji).join("").split("");
+      // 正解の漢字を取り除く
+      let filteredChars = allKanjiChars.filter(c => c !== correctKanji);
+      // 重複を削除
+      let uniqueChars = [...new Set(filteredChars)];
+      // シャッフル
+      uniqueChars.sort(() => 0.5 - Math.random());
+      return uniqueChars.slice(0, 3);
     }
 
-    function checkAnswer(selectedKanji, correctKanji, reading) {
-      if (selectedKanji === correctKanji) {
-        alert(`⭕️ 正解です！\n【${correctKanji}（${reading}）】`);
+    function checkAnswer(selectedChar, correctKanji, fullKanji, reading) {
+      if (selectedChar === correctKanji) {
+        alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】`);
         score++;
       } else {
-        alert(`❌ 不正解...\n正解は「${correctKanji}（${reading}）」でした。`);
+        alert(`❌ 不正解...\n正解は「${correctKanji}」でした。\n【${fullKanji}（${reading}）】`);
       }
       currentIndex++;
       showQuestion();
@@ -238,18 +242,27 @@
       }
 
       const q = currentFilteredQuiz[currentIndex];
-      const options = getRandomOptions(q);
+      
+      // 0〜3のランダムな位置の漢字を空欄（〇）にする
+      const blankIndex = Math.floor(Math.random() * 4);
+      targetChar = q.kanji[blankIndex];
+      const maskedKanji = q.kanji.substring(0, blankIndex) + "〇" + q.kanji.substring(blankIndex + 1);
+
+      // 選択肢（正解の漢字1文字 ＋ ダミー漢字3文字）を作成
+      const dummyChars = getRandomDummyKanji(targetChar);
+      const options = [targetChar, ...dummyChars].sort(() => 0.5 - Math.random());
 
       container.innerHTML = `
         <div class="meta-info">
           <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}</span>
           <span>カテゴリ: ${q.category}</span>
         </div>
+        <div class="question-kanji">${maskedKanji}</div>
         <div class="meaning">【意味】<br>${q.meaning}</div>
         <div class="options">
-          ${options.map(opt => `
-            <button onclick="checkAnswer('${opt.kanji}', '${q.kanji}', '${q.reading}')">
-              <ruby>${opt.kanji}<rt>${opt.reading}</rt></ruby>
+          ${options.map(char => `
+            <button onclick="checkAnswer('${char}', '${targetChar}', '${q.kanji}', '${q.reading}')">
+              ${char}
             </button>
           `).join('')}
         </div>
