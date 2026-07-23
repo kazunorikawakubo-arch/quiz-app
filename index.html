@@ -115,6 +115,32 @@
     .option-btn:active {
       background-color: #e8f0fe;
     }
+    /* 入力フォーム用スタイル ✍️ */
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .answer-input {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.2rem;
+      border: 2px solid #1a73e8;
+      border-radius: 8px;
+      text-align: center;
+      outline: none;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
     .score-box {
       text-align: center;
       padding: 20px 0;
@@ -159,13 +185,11 @@
   <h2>漢検1級 マスター</h2>
 
   <div class="filter-group">
-    <!-- ジャンル選択 -->
     <select id="genreSelect" onchange="filterQuiz()">
       <option value="四字熟語">四字熟語</option>
       <option value="動詞・形容詞">動詞・形容詞</option>
     </select>
 
-    <!-- 五十音選択 -->
     <select id="categorySelect" onchange="filterQuiz()">
       <option value="all">すべて表示</option>
       <option value="あ行">あ行</option>
@@ -198,15 +222,6 @@
     let currentIndex = 0;
     let score = 0;
     let wrongQuestions = [];
-
-    const similarSoundMap = {
-      'か':'が','が':'か','き':'ぎ','ぎ':'き','く':'ぐ','ぐ':'く','け':'げ','げ':'け','こ':'ご','ご':'こ',
-      'さ':'ざ','ざ':'さ','し':'じ','じ':'し','す':'ず','ず':'す','せ':'ぜ','ぜ':'せ','そ':'ぞ','ぞ':'そ',
-      'た':'だ','だ':'た','ち':'ぢ','ぢ':'ち','つ':'づ','づ':'つ','て':'で','で':'て','と':'ど','ど':'と',
-      'は':'ば','ば':'は','ひ':'び','び':'ひ','ふ':'ぶ','ぶ':'ふ','へ':'べ','べ':'へ','ほ':'ぼ','ぼ':'ほ',
-      'あ':'お','い':'え','う':'お','え':'い','お':'う',
-      'き':'け','し':'せ','ち':'て','ひ':'へ'
-    };
 
     function switchMode(mode) {
       currentMode = mode;
@@ -243,48 +258,10 @@
       showQuestion();
     }
 
-    // ひらがなかどうかを判定するヘルパー関数
     function isHiragana(char) {
       return /^[\u3040-\u309F]$/.test(char);
     }
 
-    function generateSimilarReading(reading) {
-      let chars = reading.split('');
-      let candidates = [];
-      for (let i = 0; i < chars.length; i++) {
-        if (similarSoundMap[chars[i]]) {
-          candidates.push(i);
-        }
-      }
-      if (candidates.length === 0) return reading;
-      
-      let targetIndex = candidates[Math.floor(Math.random() * candidates.length)];
-      chars[targetIndex] = similarSoundMap[chars[targetIndex]];
-      return chars.join('');
-    }
-
-    // 同じジャンルの中から類似読みダミーを作成 🎧
-    function getSimilarReadingOptions(correctItem) {
-      let options = new Set([correctItem.reading]);
-      let attempts = 0;
-      while (options.size < 4 && attempts < 30) {
-        let dummy = generateSimilarReading(correctItem.reading);
-        options.add(dummy);
-        attempts++;
-      }
-      // 不足分は同ジャンルの他の読みから補完
-      if (options.size < 4) {
-        let sameGenreItems = quizData.filter(item => item.genre === correctItem.genre && !options.has(item.reading));
-        sameGenreItems.sort(() => 0.5 - Math.random());
-        for (let item of sameGenreItems) {
-          options.add(item.reading);
-          if (options.size === 4) break;
-        }
-      }
-      return Array.from(options).sort(() => 0.5 - Math.random());
-    }
-
-    // 同ジャンルの他データから選択肢を取得 🗂️
     function getRandomOptions(correctItem, key) {
       let wrongItems = quizData.filter(item => item.genre === correctItem.genre && item[key] !== correctItem[key]);
       let uniqueWrong = [];
@@ -301,15 +278,12 @@
       return options.sort(() => 0.5 - Math.random());
     }
 
-    // 穴埋め用のダミー漢字を取得（ひらがなは除外） 🧩
     function getRandomDummyKanji(correctChar, currentGenre) {
       let genreData = quizData.filter(item => item.genre === currentGenre);
       let allChars = genreData.map(item => item.kanji).join("").split("");
-      // 漢字のみに絞り込み（ひらがなを除外）
       let filtered = [...new Set(allChars.filter(c => c !== correctChar && !isHiragana(c)))];
       filtered.sort(() => 0.5 - Math.random());
       
-      // 不足している場合は全体から漢字を取得
       if (filtered.length < 3) {
         let fallbackChars = quizData.map(item => item.kanji).join("").split("");
         let extra = [...new Set(fallbackChars.filter(c => c !== correctChar && !isHiragana(c)))];
@@ -321,18 +295,27 @@
 
     function checkAnswer(selectedVal, correctVal, fullKanji, reading, meaning) {
       const currentQuestion = currentFilteredQuiz[currentIndex];
+      // 入力値の全角・半角スペースを除去して判定 🧼
+      const cleanSelected = selectedVal.trim();
+      const cleanCorrect = correctVal.trim();
 
-      if (selectedVal === correctVal) {
+      if (cleanSelected === cleanCorrect) {
         alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
         score++;
       } else {
-        alert(`❌ 不正解...\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
+        alert(`❌ 不正解...\nあなたの回答: 「${cleanSelected}」\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
         if (!wrongQuestions.includes(currentQuestion)) {
           wrongQuestions.push(currentQuestion);
         }
       }
       currentIndex++;
       showQuestion();
+    }
+
+    function submitInputAnswer(correctReading, fullKanji, meaning) {
+      const inputEl = document.getElementById("textAnswerInput");
+      if (!inputEl) return;
+      checkAnswer(inputEl.value, correctReading, fullKanji, correctReading, meaning);
     }
 
     function showQuestion() {
@@ -370,7 +353,6 @@
       const q = currentFilteredQuiz[currentIndex];
 
       if (currentMode === 'blank') {
-        // 送り仮名（ひらがな）を避けて、漢字の位置から穴埋めターゲットを選ぶ 🎯
         let kanjiIndices = [];
         for (let i = 0; i < q.kanji.length; i++) {
           if (!isHiragana(q.kanji[i])) {
@@ -378,7 +360,6 @@
           }
         }
         
-        // 万が一すべてひらがな等の場合のフォールバック
         let targetIndex = kanjiIndices.length > 0 
           ? kanjiIndices[Math.floor(Math.random() * kanjiIndices.length)] 
           : 0;
@@ -405,23 +386,25 @@
         `;
 
       } else if (currentMode === 'reading') {
-        const options = getSimilarReadingOptions(q);
-
+        // テキスト入力式 ✍️
         container.innerHTML = `
           <div class="meta-info">
-            <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（読み）</span>
+            <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（読み入力）</span>
             <span>ジャンル: ${q.genre}</span>
           </div>
           <div class="question-box">${q.kanji}</div>
           <div class="meaning">【意味】<br>${q.meaning}</div>
-          <div class="options">
-            ${options.map(opt => `
-              <button class="option-btn" onclick="checkAnswer('${opt}', '${q.reading}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
-                ${opt}
-              </button>
-            `).join('')}
-          </div>
+          <form class="input-container" onsubmit="event.preventDefault(); submitInputAnswer('${q.reading}', '${q.kanji}', '${q.meaning.replace(/'/g, "\\'")}');">
+            <input type="text" id="textAnswerInput" class="answer-input" placeholder="ひらがなで入力" autofocus autocomplete="off">
+            <button type="submit" class="submit-btn">回答する 🚀</button>
+          </form>
         `;
+
+        // 画面切り替え後に自動で入力欄にフォーカスを当てる 🎯
+        setTimeout(() => {
+          const el = document.getElementById("textAnswerInput");
+          if (el) el.focus();
+        }, 50);
 
       } else if (currentMode === 'meaning') {
         const options = getRandomOptions(q, 'meaning');
