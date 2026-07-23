@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>漢検1級 四字熟語穴埋め</title>
+  <title>漢検1級 四字熟語マスター</title>
 
   <style>
     * {
@@ -19,8 +19,30 @@
     }
     h2 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       font-size: 1.4rem;
+    }
+    /* モード切り替えタブ */
+    .mode-container {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 10px 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      background-color: white;
+      color: #555;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background-color: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
     }
     .card {
       background: white;
@@ -36,13 +58,14 @@
       font-size: 0.9rem;
       margin-bottom: 15px;
     }
-    .question-kanji {
+    .question-box {
       font-size: 2.2rem;
       font-weight: bold;
       text-align: center;
-      letter-spacing: 4px;
+      letter-spacing: 2px;
       margin: 15px 0;
       color: #1a73e8;
+      line-height: 1.3;
     }
     .meaning {
       background-color: #f1f3f4;
@@ -57,16 +80,27 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    button {
-      padding: 16px 6px;
-      font-size: 1.5rem;
+    /* 意味選択モード用（選択肢が長いため1列表示） */
+    .options.vertical {
+      grid-template-columns: 1fr;
+    }
+    .option-btn {
+      padding: 14px 8px;
+      font-size: 1.2rem;
       font-weight: bold;
       border: 1px solid #dadce0;
       border-radius: 8px;
       background-color: white;
       cursor: pointer;
+      line-height: 1.4;
     }
-    button:active {
+    .options.vertical .option-btn {
+      font-size: 0.95rem;
+      text-align: left;
+      font-weight: normal;
+      padding: 12px 14px;
+    }
+    .option-btn:active {
       background-color: #e8f0fe;
     }
     select {
@@ -99,12 +133,22 @@
       border: none;
       padding: 14px;
       font-size: 1.1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <h2>漢検1級 四字熟語穴埋め</h2>
+  <h2>漢検1級 四字熟語</h2>
+
+  <!-- モード切替タブ -->
+  <div class="mode-container">
+    <button id="mode-blank" class="mode-btn active" onclick="switchMode('blank')">🧩 穴埋め</button>
+    <button id="mode-reading" class="mode-btn" onclick="switchMode('reading')">📖 読み</button>
+    <button id="mode-meaning" class="mode-btn" onclick="switchMode('meaning')">💡 意味</button>
+  </div>
 
   <select id="categorySelect" onchange="changeCategory()">
     <option value="all">すべて表示</option>
@@ -123,14 +167,21 @@
   <div id="quizContainer" class="card">
   </div>
 
-  <!-- 問題データを外部ファイルから読み込みます -->
+  <!-- 外部問題データ -->
   <script src="quiz-data.js"></script>
 
   <script>
+    let currentMode = 'blank'; // 'blank', 'reading', 'meaning'
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
-    let targetChar = "";
+
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`mode-${mode}`).classList.add('active');
+      restartQuiz();
+    }
 
     function changeCategory() {
       const selectedCategory = document.getElementById("categorySelect").value;
@@ -148,20 +199,38 @@
       showQuestion();
     }
 
-    function getRandomDummyKanji(correctKanji) {
-      let allKanjiChars = quizData.map(item => item.kanji).join("").split("");
-      let filteredChars = allKanjiChars.filter(c => c !== correctKanji);
-      let uniqueChars = [...new Set(filteredChars)];
-      uniqueChars.sort(() => 0.5 - Math.random());
-      return uniqueChars.slice(0, 3);
+    // ダミーの選択肢を取得する汎用関数
+    function getRandomOptions(correctItem, key) {
+      let wrongItems = quizData.filter(item => item[key] !== correctItem[key]);
+      // 重複する値を除外
+      let uniqueWrong = [];
+      let seen = new Set();
+      for (let item of wrongItems) {
+        if (!seen.has(item[key])) {
+          seen.add(item[key]);
+          uniqueWrong.push(item);
+        }
+      }
+      uniqueWrong.sort(() => 0.5 - Math.random());
+      let selectedWrong = uniqueWrong.slice(0, 3);
+      let options = [correctItem, ...selectedWrong];
+      return options.sort(() => 0.5 - Math.random());
     }
 
-    function checkAnswer(selectedChar, correctKanji, fullKanji, reading) {
-      if (selectedChar === correctKanji) {
-        alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】`);
+    // 穴埋め用のダミー漢字を取得
+    function getRandomDummyKanji(correctChar) {
+      let allChars = quizData.map(item => item.kanji).join("").split("");
+      let filtered = [...new Set(allChars.filter(c => c !== correctChar))];
+      filtered.sort(() => 0.5 - Math.random());
+      return filtered.slice(0, 3);
+    }
+
+    function checkAnswer(isCorrect, fullKanji, reading, meaning) {
+      if (isCorrect) {
+        alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
         score++;
       } else {
-        alert(`❌ 不正解...\n正解は「${correctKanji}」でした。\n【${fullKanji}（${reading}）】`);
+        alert(`❌ 不正解...\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
       }
       currentIndex++;
       showQuestion();
@@ -189,29 +258,71 @@
       }
 
       const q = currentFilteredQuiz[currentIndex];
-      
-      const blankIndex = Math.floor(Math.random() * 4);
-      targetChar = q.kanji[blankIndex];
-      const maskedKanji = q.kanji.substring(0, blankIndex) + "〇" + q.kanji.substring(blankIndex + 1);
 
-      const dummyChars = getRandomDummyKanji(targetChar);
-      const options = [targetChar, ...dummyChars].sort(() => 0.5 - Math.random());
+      if (currentMode === 'blank') {
+        // --- 穴埋めモード ---
+        const blankIndex = Math.floor(Math.random() * 4);
+        const targetChar = q.kanji[blankIndex];
+        const maskedKanji = q.kanji.substring(0, blankIndex) + "〇" + q.kanji.substring(blankIndex + 1);
+        const dummyChars = getRandomDummyKanji(targetChar);
+        const options = [targetChar, ...dummyChars].sort(() => 0.5 - Math.random());
 
-      container.innerHTML = `
-        <div class="meta-info">
-          <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}</span>
-          <span>カテゴリ: ${q.category}</span>
-        </div>
-        <div class="question-kanji">${maskedKanji}</div>
-        <div class="meaning">【意味】<br>${q.meaning}</div>
-        <div class="options">
-          ${options.map(char => `
-            <button onclick="checkAnswer('${char}', '${targetChar}', '${q.kanji}', '${q.reading}')">
-              ${char}
-            </button>
-          `).join('')}
-        </div>
-      `;
+        container.innerHTML = `
+          <div class="meta-info">
+            <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（穴埋め）</span>
+            <span>カテゴリ: ${q.category}</span>
+          </div>
+          <div class="question-box">${maskedKanji}</div>
+          <div class="meaning">【意味】<br>${q.meaning}</div>
+          <div class="options">
+            ${options.map(char => `
+              <button class="option-btn" onclick="checkAnswer('${char === targetChar}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+                ${char}
+              </button>
+            `).join('')}
+          </div>
+        `;
+
+      } else if (currentMode === 'reading') {
+        // --- 読みモード ---
+        const options = getRandomOptions(q, 'reading');
+
+        container.innerHTML = `
+          <div class="meta-info">
+            <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（読み）</span>
+            <span>カテゴリ: ${q.category}</span>
+          </div>
+          <div class="question-box">${q.kanji}</div>
+          <div class="meaning">【意味】<br>${q.meaning}</div>
+          <div class="options">
+            ${options.map(opt => `
+              <button class="option-btn" onclick="checkAnswer('${opt.reading === q.reading}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+                ${opt.reading}
+              </button>
+            `).join('')}
+          </div>
+        `;
+
+      } else if (currentMode === 'meaning') {
+        // --- 意味選択モード ---
+        const options = getRandomOptions(q, 'meaning');
+
+        container.innerHTML = `
+          <div class="meta-info">
+            <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（意味）</span>
+            <span>カテゴリ: ${q.category}</span>
+          </div>
+          <div class="question-box">${q.kanji}</div>
+          <div style="text-align:center; color:#666; margin-bottom:15px;">（${q.reading}）</div>
+          <div class="options vertical">
+            ${options.map(opt => `
+              <button class="option-btn" onclick="checkAnswer('${opt.meaning === q.meaning}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+                ${opt.meaning}
+              </button>
+            `).join('')}
+          </div>
+        `;
+      }
     }
 
     changeCategory();
