@@ -36,19 +36,11 @@
       font-size: 0.9rem;
       margin-bottom: 15px;
     }
-    .reading {
-      font-size: 1.6rem;
-      font-weight: bold;
-      text-align: center;
-      letter-spacing: 2px;
-      margin: 15px 0;
-      color: #1a73e8;
-    }
     .meaning {
       background-color: #f1f3f4;
-      padding: 12px;
+      padding: 15px;
       border-radius: 8px;
-      font-size: 0.95rem;
+      font-size: 1rem;
       line-height: 1.6;
       margin-bottom: 20px;
     }
@@ -206,12 +198,12 @@
       const q = currentFilteredQuiz[currentIndex];
       const options = getRandomOptions(q);
 
+      // 青文字の読み（ひらがな）を削除し、【意味】と選択肢のみ表示
       container.innerHTML = `
         <div class="meta-info">
           <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}</span>
           <span>カテゴリ: ${q.category}</span>
         </div>
-        <div class="reading">${q.reading}</div>
         <div class="meaning">【意味】<br>${q.meaning}</div>
         <div class="options">
           ${options.map(opt => `
