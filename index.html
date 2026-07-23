@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>漢検1級 四字熟語マスター</title>
+  <title>漢検1級 マスター</title>
 
   <style>
     * {
@@ -21,6 +21,20 @@
       text-align: center;
       margin-bottom: 15px;
       font-size: 1.4rem;
+    }
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    select {
+      flex: 1;
+      padding: 10px;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      border: 1px solid #dadce0;
+      background-color: white;
+      font-weight: bold;
     }
     .mode-container {
       display: flex;
@@ -101,15 +115,6 @@
     .option-btn:active {
       background-color: #e8f0fe;
     }
-    select {
-      width: 100%;
-      padding: 10px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1px solid #dadce0;
-      margin-bottom: 15px;
-      background-color: white;
-    }
     .score-box {
       text-align: center;
       padding: 20px 0;
@@ -151,27 +156,36 @@
 </head>
 <body>
 
-  <h2>漢検1級 四字熟語マスター</h2>
+  <h2>漢検1級 マスター</h2>
+
+  <div class="filter-group">
+    <!-- ジャンル選択 -->
+    <select id="genreSelect" onchange="filterQuiz()">
+      <option value="四字熟語">四字熟語</option>
+      <option value="動詞・形容詞">動詞・形容詞</option>
+    </select>
+
+    <!-- 五十音選択 -->
+    <select id="categorySelect" onchange="filterQuiz()">
+      <option value="all">すべて表示</option>
+      <option value="あ行">あ行</option>
+      <option value="か行">か行</option>
+      <option value="さ行">さ行</option>
+      <option value="た行">た行</option>
+      <option value="な行">な行</option>
+      <option value="は行">は行</option>
+      <option value="ま行">ま行</option>
+      <option value="や行">や行</option>
+      <option value="ら行">ら行</option>
+      <option value="わ行">わ行</option>
+    </select>
+  </div>
 
   <div class="mode-container">
     <button id="mode-blank" class="mode-btn active" onclick="switchMode('blank')">🧩 穴埋め</button>
     <button id="mode-reading" class="mode-btn" onclick="switchMode('reading')">📖 読み</button>
     <button id="mode-meaning" class="mode-btn" onclick="switchMode('meaning')">💡 意味</button>
   </div>
-
-  <select id="categorySelect" onchange="changeCategory()">
-    <option value="all">すべて表示</option>
-    <option value="あ行">あ行</option>
-    <option value="か行">か行</option>
-    <option value="さ行">さ行</option>
-    <option value="た行">た行</option>
-    <option value="な行">な行</option>
-    <option value="は行">は行</option>
-    <option value="ま行">ま行</option>
-    <option value="や行">や行</option>
-    <option value="ら行">ら行</option>
-    <option value="わ行">わ行</option>
-  </select>
 
   <div id="quizContainer" class="card">
   </div>
@@ -185,7 +199,6 @@
     let score = 0;
     let wrongQuestions = [];
 
-    // 似た音・濁音への変換マップ 🔤
     const similarSoundMap = {
       'か':'が','が':'か','き':'ぎ','ぎ':'き','く':'ぐ','ぐ':'く','け':'げ','げ':'け','こ':'ご','ご':'こ',
       'さ':'ざ','ざ':'さ','し':'じ','じ':'し','す':'ず','ず':'す','せ':'ぜ','ぜ':'せ','そ':'ぞ','ぞ':'そ',
@@ -202,13 +215,16 @@
       restartQuiz();
     }
 
-    function changeCategory() {
+    function filterQuiz() {
+      const selectedGenre = document.getElementById("genreSelect").value;
       const selectedCategory = document.getElementById("categorySelect").value;
-      if (selectedCategory === "all") {
-        currentFilteredQuiz = [...quizData];
-      } else {
-        currentFilteredQuiz = quizData.filter(item => item.category === selectedCategory);
-      }
+
+      currentFilteredQuiz = quizData.filter(item => {
+        const matchGenre = item.genre === selectedGenre;
+        const matchCategory = selectedCategory === "all" || item.category === selectedCategory;
+        return matchGenre && matchCategory;
+      });
+
       restartQuiz();
     }
 
@@ -227,7 +243,6 @@
       showQuestion();
     }
 
-    // 「読み」モード用の似た音ダミー作成関数 🔊
     function generateSimilarReading(reading) {
       let chars = reading.split('');
       let candidates = [];
@@ -251,7 +266,6 @@
         options.add(dummy);
         attempts++;
       }
-      // 不足した場合は他の問題の読みで補完
       if (options.size < 4) {
         let others = quizData.map(item => item.reading).filter(r => !options.has(r));
         others.sort(() => 0.5 - Math.random());
@@ -306,7 +320,7 @@
       const container = document.getElementById("quizContainer");
 
       if (currentFilteredQuiz.length === 0) {
-        container.innerHTML = "<p style='text-align:center;'>このカテゴリーには問題がありません。</p>";
+        container.innerHTML = "<p style='text-align:center;'>この条件に該当する問題がありません。</p>";
         return;
       }
 
@@ -337,16 +351,17 @@
       const q = currentFilteredQuiz[currentIndex];
 
       if (currentMode === 'blank') {
-        const blankIndex = Math.floor(Math.random() * 4);
-        const targetChar = q.kanji[blankIndex];
-        const maskedKanji = q.kanji.substring(0, blankIndex) + "〇" + q.kanji.substring(blankIndex + 1);
+        // 穴埋め表示
+        const targetIndex = Math.floor(Math.random() * q.kanji.length);
+        const targetChar = q.kanji[targetIndex];
+        const maskedKanji = q.kanji.substring(0, targetIndex) + "〇" + q.kanji.substring(targetIndex + 1);
         const dummyChars = getRandomDummyKanji(targetChar);
         const options = [targetChar, ...dummyChars].sort(() => 0.5 - Math.random());
 
         container.innerHTML = `
           <div class="meta-info">
             <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（穴埋め）</span>
-            <span>カテゴリ: ${q.category}</span>
+            <span>ジャンル: ${q.genre}</span>
           </div>
           <div class="question-box">${maskedKanji}</div>
           <div class="meaning">【意味】<br>${q.meaning}</div>
@@ -360,13 +375,12 @@
         `;
 
       } else if (currentMode === 'reading') {
-        // 似た音の選択肢を取得 🎧
         const options = getSimilarReadingOptions(q.reading);
 
         container.innerHTML = `
           <div class="meta-info">
             <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（読み）</span>
-            <span>カテゴリ: ${q.category}</span>
+            <span>ジャンル: ${q.genre}</span>
           </div>
           <div class="question-box">${q.kanji}</div>
           <div class="meaning">【意味】<br>${q.meaning}</div>
@@ -385,7 +399,7 @@
         container.innerHTML = `
           <div class="meta-info">
             <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（意味）</span>
-            <span>カテゴリ: ${q.category}</span>
+            <span>ジャンル: ${q.genre}</span>
           </div>
           <div class="question-box">${q.kanji}</div>
           <div style="text-align:center; color:#666; margin-bottom:15px;">（${q.reading}）</div>
@@ -400,7 +414,7 @@
       }
     }
 
-    changeCategory();
+    filterQuiz();
   </script>
 </body>
 </html>
