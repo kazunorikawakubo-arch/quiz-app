@@ -115,7 +115,6 @@
     .option-btn:active {
       background-color: #e8f0fe;
     }
-    /* 入力フォーム用スタイル ✍️ */
     .input-container {
       display: flex;
       flex-direction: column;
@@ -262,6 +261,25 @@
       return /^[\u3040-\u309F]$/.test(char);
     }
 
+    // 漢字部分の読み（送り仮名を除いた部分）と送り仮名を解析するヘルパー関数 💡
+    function parseKanjiAndOkurigana(kanjiStr, readingStr) {
+      let okurigana = "";
+      for (let i = kanjiStr.length - 1; i >= 0; i--) {
+        if (isHiragana(kanjiStr[i])) {
+          okurigana = kanjiStr[i] + okurigana;
+        } else {
+          break;
+        }
+      }
+      
+      let stemReading = readingStr;
+      if (okurigana && readingStr.endsWith(okurigana)) {
+        stemReading = readingStr.slice(0, readingStr.length - okurigana.length);
+      }
+      
+      return { stemReading, okurigana };
+    }
+
     function getRandomOptions(correctItem, key) {
       let wrongItems = quizData.filter(item => item.genre === correctItem.genre && item[key] !== correctItem[key]);
       let uniqueWrong = [];
@@ -295,11 +313,16 @@
 
     function checkAnswer(selectedVal, correctVal, fullKanji, reading, meaning) {
       const currentQuestion = currentFilteredQuiz[currentIndex];
-      // 入力値の全角・半角スペースを除去して判定 🧼
       const cleanSelected = selectedVal.trim();
       const cleanCorrect = correctVal.trim();
 
-      if (cleanSelected === cleanCorrect) {
+      // 漢字部分のみの読み（stemReading）を取得 🔍
+      const { stemReading } = parseKanjiAndOkurigana(fullKanji, reading);
+
+      // 「漢字部分のみの読み（うごめ）」または「全読み（うごめく）」のどちらでも正解！ ⭕️
+      const isCorrect = (cleanSelected === cleanCorrect) || (cleanSelected === stemReading);
+
+      if (isCorrect) {
         alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
         score++;
       } else {
@@ -386,7 +409,10 @@
         `;
 
       } else if (currentMode === 'reading') {
-        // テキスト入力式 ✍️
+        // 送り仮名のプレースホルダー案内を作成 ✍️
+        const { stemReading, okurigana } = parseKanjiAndOkurigana(q.kanji, q.reading);
+        const placeholderText = okurigana ? `漢字部分の読み（例: ${stemReading}）` : "ひらがなで入力";
+
         container.innerHTML = `
           <div class="meta-info">
             <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（読み入力）</span>
@@ -395,12 +421,11 @@
           <div class="question-box">${q.kanji}</div>
           <div class="meaning">【意味】<br>${q.meaning}</div>
           <form class="input-container" onsubmit="event.preventDefault(); submitInputAnswer('${q.reading}', '${q.kanji}', '${q.meaning.replace(/'/g, "\\'")}');">
-            <input type="text" id="textAnswerInput" class="answer-input" placeholder="ひらがなで入力" autofocus autocomplete="off">
+            <input type="text" id="textAnswerInput" class="answer-input" placeholder="${placeholderText}" autofocus autocomplete="off">
             <button type="submit" class="submit-btn">回答する 🚀</button>
           </form>
         `;
 
-        // 画面切り替え後に自動で入力欄にフォーカスを当てる 🎯
         setTimeout(() => {
           const el = document.getElementById("textAnswerInput");
           if (el) el.focus();
@@ -431,4 +456,3 @@
   </script>
 </body>
 </html>
-
