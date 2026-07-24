@@ -176,6 +176,7 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -221,7 +222,14 @@
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
-    let wrongQuestions = [];
+
+    // 💾 LocalStorage から間違えた問題を読み込む（データがない場合は空の配列）
+    let wrongQuestions = JSON.parse(localStorage.getItem('kanken_wrong_questions')) || [];
+
+    function saveWrongQuestions() {
+      // 💾 LocalStorage に間違えた問題の配列を保存する
+      localStorage.setItem('kanken_wrong_questions', JSON.stringify(wrongQuestions));
+    }
 
     function switchMode(mode) {
       currentMode = mode;
@@ -246,15 +254,14 @@
     function restartQuiz() {
       currentIndex = 0;
       score = 0;
-      wrongQuestions = [];
       showQuestion();
     }
 
     function startReviewMode() {
+      if (wrongQuestions.length === 0) return;
       currentFilteredQuiz = [...wrongQuestions];
       currentIndex = 0;
       score = 0;
-      wrongQuestions = [];
       showQuestion();
     }
 
@@ -262,7 +269,6 @@
       return /^[\u3040-\u309F]$/.test(char);
     }
 
-    // 漢字部分の読み（送り仮名を除いた部分）と送り仮名を解析するヘルパー関数
     function parseKanjiAndOkurigana(kanjiStr, readingStr) {
       let okurigana = "";
       for (let i = kanjiStr.length - 1; i >= 0; i--) {
@@ -317,19 +323,24 @@
       const cleanSelected = selectedVal.trim();
       const cleanCorrect = correctVal.trim();
 
-      // 漢字部分のみの読み（stemReading）を取得
       const { stemReading } = parseKanjiAndOkurigana(fullKanji, reading);
-
-      // 「漢字部分のみの読み（うごめ）」または「全読み（うごめく）」のどちらでも正解！
       const isCorrect = (cleanSelected === cleanCorrect) || (cleanSelected === stemReading);
 
       if (isCorrect) {
         alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
         score++;
+
+        // ⭕️ 正解した場合：復習リストにあったら削除して保存を更新
+        wrongQuestions = wrongQuestions.filter(item => item.kanji !== currentQuestion.kanji);
+        saveWrongQuestions();
+
       } else {
         alert(`❌ 不正解...\nあなたの回答: 「${cleanSelected}」\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
-        if (!wrongQuestions.includes(currentQuestion)) {
+
+        // ❌ 不正解の場合：間違えた問題リストに追加して保存を更新
+        if (!wrongQuestions.some(item => item.kanji === currentQuestion.kanji)) {
           wrongQuestions.push(currentQuestion);
+          saveWrongQuestions();
         }
       }
       currentIndex++;
@@ -357,7 +368,7 @@
         if (wrongQuestions.length > 0) {
           reviewButtonHtml = `
             <button class="review-btn" onclick="startReviewMode()">
-              間違えた ${wrongQuestions.length} 問を復習する 🔄
+              保存された間違えた ${wrongQuestions.length} 問を復習する 🔄
             </button>
           `;
         }
