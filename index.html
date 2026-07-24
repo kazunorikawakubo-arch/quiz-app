@@ -181,7 +181,7 @@
       margin-bottom: 10px;
     }
 
-    /* 🎨 アニメーション用スタイル */
+    /* 🎨 正解・不正解アニメーション用スタイル */
     .feedback-overlay {
       position: fixed;
       top: 50%;
@@ -250,7 +250,7 @@
   <div id="quizContainer" class="card">
   </div>
 
-  <!-- 🎨 正解・不正解アニメーション用の表示エリア -->
+  <!-- 🎨 アニメーション用の表示エリア -->
   <div id="feedbackOverlay" class="feedback-overlay"></div>
 
   <script src="quiz-data.js"></script>
@@ -260,7 +260,7 @@
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
-    let isProcessing = false; // 連打防止フラグ
+    let isProcessing = false;
 
     let wrongQuestions = JSON.parse(localStorage.getItem('kanken_wrong_questions')) || [];
 
@@ -276,6 +276,8 @@
     }
 
     function filterQuiz() {
+      if (typeof quizData === 'undefined') return;
+
       const selectedGenre = document.getElementById("genreSelect").value;
       const selectedCategory = document.getElementById("categorySelect").value;
 
@@ -357,29 +359,26 @@
       return filtered.slice(0, 3);
     }
 
-    // 🎨 アニメーション再生関数
     function playFeedbackAnimation(isCorrect) {
       const overlay = document.getElementById("feedbackOverlay");
       overlay.textContent = isCorrect ? "⭕️" : "❌";
       
-      // アニメーションクラスの再適用
       overlay.classList.remove("animate");
-      void overlay.offsetWidth; // リフロー発生させてクラス再追加をトリガー
+      void overlay.offsetWidth;
       overlay.classList.add("animate");
     }
 
-    function checkAnswer(selectedVal, correctVal, fullKanji, reading, meaning) {
-      if (isProcessing) return; // アニメーション中の連打防止
+    function checkAnswer(selectedVal, correctVal) {
+      if (isProcessing) return;
       isProcessing = true;
 
       const currentQuestion = currentFilteredQuiz[currentIndex];
-      const cleanSelected = selectedVal.trim();
-      const cleanCorrect = correctVal.trim();
+      const cleanSelected = (selectedVal || "").trim();
+      const cleanCorrect = (correctVal || "").trim();
 
-      const { stemReading } = parseKanjiAndOkurigana(fullKanji, reading);
+      const { stemReading } = parseKanjiAndOkurigana(currentQuestion.kanji, currentQuestion.reading);
       const isCorrect = (cleanSelected === cleanCorrect) || (cleanSelected === stemReading);
 
-      // 🎨 アニメーション表示
       playFeedbackAnimation(isCorrect);
 
       if (isCorrect) {
@@ -393,7 +392,6 @@
         }
       }
 
-      // アニメーションが終わるタイミング（0.6秒後）で次の問題を表示
       setTimeout(() => {
         currentIndex++;
         isProcessing = false;
@@ -401,16 +399,17 @@
       }, 600);
     }
 
-    function submitInputAnswer(correctReading, fullKanji, meaning) {
+    function submitInputAnswer() {
       const inputEl = document.getElementById("textAnswerInput");
       if (!inputEl) return;
-      checkAnswer(inputEl.value, correctReading, fullKanji, correctReading, meaning);
+      const currentQuestion = currentFilteredQuiz[currentIndex];
+      checkAnswer(inputEl.value, currentQuestion.reading);
     }
 
     function showQuestion() {
       const container = document.getElementById("quizContainer");
 
-      if (currentFilteredQuiz.length === 0) {
+      if (!currentFilteredQuiz || currentFilteredQuiz.length === 0) {
         container.innerHTML = "<p style='text-align:center;'>この条件に該当する問題がありません。</p>";
         return;
       }
@@ -467,7 +466,7 @@
           <div class="meaning">【意味】<br>${q.meaning}</div>
           <div class="options">
             ${options.map(char => `
-              <button class="option-btn" onclick="checkAnswer('${char}', '${targetChar}', '${q.kanji}', '${q.reading}', '${q.meaning}')">
+              <button class="option-btn" onclick="checkAnswer('${char}', '${targetChar}')">
                 ${char}
               </button>
             `).join('')}
@@ -482,7 +481,7 @@
           </div>
           <div class="question-box">${q.kanji}</div>
           <div class="meaning">【意味】<br>${q.meaning}</div>
-          <form class="input-container" onsubmit="event.preventDefault(); submitInputAnswer('${q.reading}', '${q.kanji}', '${q.meaning.replace(/'/g, "\\'")}');">
+          <form class="input-container" onsubmit="event.preventDefault(); submitInputAnswer();">
             <input type="text" id="textAnswerInput" class="answer-input" placeholder="ひらがなで入力" autofocus autocomplete="off">
             <button type="submit" class="submit-btn">回答する 🚀</button>
           </form>
@@ -505,7 +504,7 @@
           <div style="text-align:center; color:#666; margin-bottom:15px;">（${q.reading}）</div>
           <div class="options vertical">
             ${options.map(opt => `
-              <button class="option-btn" onclick="checkAnswer('${opt.meaning.replace(/'/g, "\\'")}', '${q.meaning.replace(/'/g, "\\'")}', '${q.kanji}', '${q.reading}', '${q.meaning.replace(/'/g, "\\')}')">
+              <button class="option-btn" onclick="checkAnswer(this.innerText, '${q.meaning.replace(/'/g, "\\'")}')">
                 ${opt.meaning}
               </button>
             `).join('')}
