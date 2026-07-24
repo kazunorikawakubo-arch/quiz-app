@@ -261,7 +261,7 @@
       return /^[\u3040-\u309F]$/.test(char);
     }
 
-    // 漢字部分の読み（送り仮名を除いた部分）と送り仮名を解析するヘルパー関数 💡
+    // 漢字部分の読み（送り仮名を除いた部分）と送り仮名を解析するヘルパー関数
     function parseKanjiAndOkurigana(kanjiStr, readingStr) {
       let okurigana = "";
       for (let i = kanjiStr.length - 1; i >= 0; i--) {
@@ -316,10 +316,10 @@
       const cleanSelected = selectedVal.trim();
       const cleanCorrect = correctVal.trim();
 
-      // 漢字部分のみの読み（stemReading）を取得 🔍
+      // 漢字部分のみの読み（stemReading）を取得
       const { stemReading } = parseKanjiAndOkurigana(fullKanji, reading);
 
-      // 「漢字部分のみの読み（うごめ）」または「全読み（うごめく）」のどちらでも正解！ ⭕️
+      // 「漢字部分のみの読み（うごめ）」または「全読み（うごめく）」のどちらでも正解！
       const isCorrect = (cleanSelected === cleanCorrect) || (cleanSelected === stemReading);
 
       if (isCorrect) {
@@ -409,10 +409,6 @@
         `;
 
       } else if (currentMode === 'reading') {
-        // 送り仮名のプレースホルダー案内を作成 ✍️
-        const { stemReading, okurigana } = parseKanjiAndOkurigana(q.kanji, q.reading);
-        const placeholderText = okurigana ? `漢字部分の読み（例: ${stemReading}）` : "ひらがなで入力";
-
         container.innerHTML = `
           <div class="meta-info">
             <span>問題 ${currentIndex + 1} / ${currentFilteredQuiz.length}（読み入力）</span>
@@ -421,7 +417,7 @@
           <div class="question-box">${q.kanji}</div>
           <div class="meaning">【意味】<br>${q.meaning}</div>
           <form class="input-container" onsubmit="event.preventDefault(); submitInputAnswer('${q.reading}', '${q.kanji}', '${q.meaning.replace(/'/g, "\\'")}');">
-            <input type="text" id="textAnswerInput" class="answer-input" placeholder="${placeholderText}" autofocus autocomplete="off">
+            <input type="text" id="textAnswerInput" class="answer-input" placeholder="ひらがなで入力" autofocus autocomplete="off">
             <button type="submit" class="submit-btn">回答する 🚀</button>
           </form>
         `;
