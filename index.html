@@ -16,6 +16,7 @@
       margin: 0 auto;
       background-color: #f8f9fa;
       color: #333;
+      position: relative;
     }
     h2 {
       text-align: center;
@@ -63,6 +64,7 @@
       padding: 20px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       margin-bottom: 15px;
+      position: relative;
     }
     .meta-info {
       display: flex;
@@ -178,6 +180,39 @@
       cursor: pointer;
       margin-bottom: 10px;
     }
+
+    /* 🎨 アニメーション用スタイル */
+    .feedback-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      font-size: 7rem;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+      display: none;
+    }
+
+    .feedback-overlay.animate {
+      display: block;
+      animation: popAndFade 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popAndFade {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+      }
+      50% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+    }
   </style>
 </head>
 <body>
@@ -215,6 +250,9 @@
   <div id="quizContainer" class="card">
   </div>
 
+  <!-- 🎨 正解・不正解アニメーション用の表示エリア -->
+  <div id="feedbackOverlay" class="feedback-overlay"></div>
+
   <script src="quiz-data.js"></script>
 
   <script>
@@ -222,12 +260,11 @@
     let currentFilteredQuiz = [];
     let currentIndex = 0;
     let score = 0;
+    let isProcessing = false; // 連打防止フラグ
 
-    // 💾 LocalStorage から間違えた問題を読み込む（データがない場合は空の配列）
     let wrongQuestions = JSON.parse(localStorage.getItem('kanken_wrong_questions')) || [];
 
     function saveWrongQuestions() {
-      // 💾 LocalStorage に間違えた問題の配列を保存する
       localStorage.setItem('kanken_wrong_questions', JSON.stringify(wrongQuestions));
     }
 
@@ -254,6 +291,7 @@
     function restartQuiz() {
       currentIndex = 0;
       score = 0;
+      isProcessing = false;
       showQuestion();
     }
 
@@ -262,6 +300,7 @@
       currentFilteredQuiz = [...wrongQuestions];
       currentIndex = 0;
       score = 0;
+      isProcessing = false;
       showQuestion();
     }
 
@@ -318,7 +357,21 @@
       return filtered.slice(0, 3);
     }
 
+    // 🎨 アニメーション再生関数
+    function playFeedbackAnimation(isCorrect) {
+      const overlay = document.getElementById("feedbackOverlay");
+      overlay.textContent = isCorrect ? "⭕️" : "❌";
+      
+      // アニメーションクラスの再適用
+      overlay.classList.remove("animate");
+      void overlay.offsetWidth; // リフロー発生させてクラス再追加をトリガー
+      overlay.classList.add("animate");
+    }
+
     function checkAnswer(selectedVal, correctVal, fullKanji, reading, meaning) {
+      if (isProcessing) return; // アニメーション中の連打防止
+      isProcessing = true;
+
       const currentQuestion = currentFilteredQuiz[currentIndex];
       const cleanSelected = selectedVal.trim();
       const cleanCorrect = correctVal.trim();
@@ -326,25 +379,26 @@
       const { stemReading } = parseKanjiAndOkurigana(fullKanji, reading);
       const isCorrect = (cleanSelected === cleanCorrect) || (cleanSelected === stemReading);
 
-      if (isCorrect) {
-        alert(`⭕️ 正解です！\n【${fullKanji}（${reading}）】\n${meaning}`);
-        score++;
+      // 🎨 アニメーション表示
+      playFeedbackAnimation(isCorrect);
 
-        // ⭕️ 正解した場合：復習リストにあったら削除して保存を更新
+      if (isCorrect) {
+        score++;
         wrongQuestions = wrongQuestions.filter(item => item.kanji !== currentQuestion.kanji);
         saveWrongQuestions();
-
       } else {
-        alert(`❌ 不正解...\nあなたの回答: 「${cleanSelected}」\n正解は【${fullKanji}（${reading}）】でした。\n${meaning}`);
-
-        // ❌ 不正解の場合：間違えた問題リストに追加して保存を更新
         if (!wrongQuestions.some(item => item.kanji === currentQuestion.kanji)) {
           wrongQuestions.push(currentQuestion);
           saveWrongQuestions();
         }
       }
-      currentIndex++;
-      showQuestion();
+
+      // アニメーションが終わるタイミング（0.6秒後）で次の問題を表示
+      setTimeout(() => {
+        currentIndex++;
+        isProcessing = false;
+        showQuestion();
+      }, 600);
     }
 
     function submitInputAnswer(correctReading, fullKanji, meaning) {
@@ -451,7 +505,7 @@
           <div style="text-align:center; color:#666; margin-bottom:15px;">（${q.reading}）</div>
           <div class="options vertical">
             ${options.map(opt => `
-              <button class="option-btn" onclick="checkAnswer('${opt.meaning.replace(/'/g, "\\'")}', '${q.meaning.replace(/'/g, "\\'")}', '${q.kanji}', '${q.reading}', '${q.meaning.replace(/'/g, "\\'")}')">
+              <button class="option-btn" onclick="checkAnswer('${opt.meaning.replace(/'/g, "\\'")}', '${q.meaning.replace(/'/g, "\\'")}', '${q.kanji}', '${q.reading}', '${q.meaning.replace(/'/g, "\\')}')">
                 ${opt.meaning}
               </button>
             `).join('')}
