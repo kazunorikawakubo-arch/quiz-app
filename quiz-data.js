@@ -59,18 +59,19 @@ const quizData = [
     kanji: "背水之陣",
     reading: "はいすいのじん",
     meaning: "絶体絶命の立場で、一歩も引けない覚悟で事に当たること。"
-  }
-// --- 故事・成句（追加分） 📜 ---
+  },
+
+  // --- 故事・成句（追加分） 📜 ---
   {
     genre: "故事・成句",
-    category: "あ行",
+    category: "か行",
     kanji: "蛍雪之功",
     reading: "けいせつのこう",
     meaning: "苦労して学問に励むこと。"
   },
   {
     genre: "故事・成句",
-    category: "か行",
+    category: "さ行",
     kanji: "推敲",
     reading: "すいこう",
     meaning: "詩や文章の字句を何度も練り直すこと。"
@@ -91,14 +92,14 @@ const quizData = [
   },
   {
     genre: "故事・成句",
-    category: "さ行",
+    category: "や行",
     kanji: "羊頭狗肉",
     reading: "ようとうくにく",
     meaning: "見かけや看板は立派だが、内容が伴わないこと。"
   },
   {
     genre: "故事・成句",
-    category: "た行",
+    category: "か行",
     kanji: "杞憂",
     reading: "きゆう",
     meaning: "無用な心配や取り越し苦労をすること。"
@@ -112,7 +113,7 @@ const quizData = [
   },
   {
     genre: "故事・成句",
-    category: "な行",
+    category: "た行",
     kanji: "登竜門",
     reading: "とうりゅうもん",
     meaning: "立身出世のための厳しい関門・難関のこと。"
@@ -140,14 +141,14 @@ const quizData = [
   },
   {
     genre: "故事・成句",
-    category: "ま行",
+    category: "は行",
     kanji: "背水陣",
     reading: "はいすいのじん",
     meaning: "一歩も引けない絶体絶命の立場で全力を尽くすこと。"
   },
   {
     genre: "故事・成句",
-    category: "や行",
+    category: "か行",
     kanji: "蛍窓",
     reading: "けいそう",
     meaning: "苦学すること。また、そのための部屋や窓辺。"
@@ -161,7 +162,7 @@ const quizData = [
   },
   {
     genre: "故事・成句",
-    category: "わ行",
+    category: "か行",
     kanji: "呉越同舟",
     reading: "ごえつどうしゅう",
     meaning: "仲の悪い者同士が同じ場所に居合わせたり協力したりすること。"
